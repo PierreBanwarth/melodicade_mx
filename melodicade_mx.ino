@@ -175,6 +175,7 @@ byte deckType = 1; // Deck type: 0 = No velocity detection, 1 = Dual switch velo
 #include "SSD1306AsciiWire.h"                                                   // SSD1306Ascii v1.3.0 library by Bill Greiman
 #include "RotaryEncoder.h"                                                      // RotaryEncoder v1.5.0 library by Matthais Hertel
 #include "Audio.h"                                                              // Teensy Audio library by Paul Stoffregen
+#include <PCF8575.h>
 
 // Teensy hardware restart variables for use in controllerReset() function
 #define RESTART_ADDR 0xE000ED0C
@@ -184,6 +185,11 @@ byte deckType = 1; // Deck type: 0 = No velocity detection, 1 = Dual switch velo
 // OLED I2C address and library configuration
 #define I2C_ADDRESS 0x3C
 SSD1306AsciiWire oled;
+
+// declaration of the PCF8575 objects
+PCF8575 PCF1(0x26, &Wire);
+PCF8575 PCF2(0x22, &Wire);
+
 
 // Analog input pins
 const byte topPotPin            = A7;
@@ -847,8 +853,9 @@ void setup()
     pinMode(footPedalPin, INPUT_PULLDOWN);
 
     // OLED setup
-    Wire.begin();                                                               // Init I2C
-    Wire.setClock(400000L);                                                     // Fast mode
+    Wire1.begin();                                                               // Init I2C
+    Wire1.setClock(400000L);
+                                                                                 // Fast mode
     oled.begin(&Adafruit128x64, I2C_ADDRESS);                                   // OLED type and address
     oled.setFont(font5x7);                                                      // Set the font type (https://github.com/greiman/SSD1306Ascii/blob/master/doc/5x7fonts.pdf)
     oled.setContrast(0);                                                        // Lower the contrast (set to 0 as my cheap OLED only ranges from way-too-bright to acceptable brightness level)
@@ -1181,6 +1188,9 @@ void oledUpdate()
 
 void digitalButtons()
 {
+    // TODO remplacer par un tableau a une dimension
+    // faire une fonction qui récupère état touche courante
+
     // Scan each row in a column, then increment the column index and start down the rows again.  Increment indexes on next loop, or reset when limits are reached.
     // Scanning of each node is broken out into separate program loops, as it can take pins several microseconds to fully change state,
     // and that time is far better utilized by executing program code than on unnecessary delay statements.
@@ -1219,6 +1229,7 @@ void digitalButtons()
             }
 
             // Control panel buttons
+            // TODO Ajouter les pins pour les 6 boutons en plus.
             if (buttonNumber == 0)   { channelUpButton = HIGH; }                                // If a control panel button was pressed, set the state to HIGH (active)
             if (buttonNumber == 20)  { channelDownButton = HIGH; }
             if (buttonNumber == 40)  { pitchUpHalfButton = HIGH; }
